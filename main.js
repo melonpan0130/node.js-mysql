@@ -47,8 +47,8 @@ var app = http.createServer(function(request,response){
             var list = template.list(topics);
             var html = template.HTML(title, list,
               `<h2>${title}</h2>${description}`,
-              ` <a href="/create">create</a>
-                <a href="/update?id=${queryData.id}">update</a>
+              ` <button onclick='location.href="/create"'>create</a></button>
+                <button onclick='location.href="/update?id=${queryData.id}"'>update</a></button>
                 <form action="delete_process" method="post">
                   <input type="hidden" name="id" value="${queryData.id}">
                   <input type="submit" value="delete">
@@ -131,7 +131,6 @@ var app = http.createServer(function(request,response){
       });
       request.on('end', function(){
           var post = qs.parse(body);
-
           db.query('UPDATE topic SET title = ?, description = ?, author_id=1 WHERE id = ?'
           , [post.title, post.description, post.id]
           , function(error, result) {
@@ -147,9 +146,11 @@ var app = http.createServer(function(request,response){
       });
       request.on('end', function(){
           var post = qs.parse(body);
-          var id = post.id;
-          var filteredId = path.parse(id).base;
-          fs.unlink(`data/${filteredId}`, function(error){
+
+          db.query('DELETE FROM topic WHERE id = ?', [post.id]
+          , function(error, result) {
+            if(error)
+              throw error;
             response.writeHead(302, {Location: `/`});
             response.end();
           })
